@@ -1,0 +1,116 @@
+from dash import Dash, html, dcc, Input, Output
+import plotly.express as px
+import pandas as pd
+import time
+from core.data_loading import load_session, get_fastest_lap_telemetry
+from visualization.speed_delta_plotly import plot_speed_delta_plotly
+from visualization.track_map_plotly import plot_track_map_plotly
+from core.delta_computer import delta_cumulative
+from dash.exceptions import PreventUpdate
+
+app = Dash(__name__)
+
+app.layout = html.Div([
+    html.H1("F1 Lap Analyzer"),
+    dcc.Dropdown(
+        id = 'year-dropdown',
+        options = [2022, 2023, 2024],
+        value = 2024,
+    ),
+    dcc.Dropdown(
+        id = 'gp-dropdown',
+        options = ['Monaco', 'Bahrain', 'Silverstone'],
+        value = 'Monaco',
+    ),
+    dcc.Dropdown(
+        id = 'session-dropdown',
+        options = ['Q', 'R'],
+        value = 'Q',
+    ),
+    dcc.Dropdown(
+        id='driver1-dropdown',
+    ),
+    dcc.Dropdown(
+        id='driver2-dropdown',
+    ),
+    dcc.Loading(
+        id = 'loading-graphs',
+        children=html.Div([
+            html.Div(
+                dcc.Graph(id='speed-delta-graph'),
+                style = {'flex' : '1', 'minWidth':'0'}
+            ), 
+            html.Div( 
+                dcc.Graph(id='track-map-delta'),
+                style = {'flex' : '1', 'minWidth':'0'}
+            ),
+        ], style = {'display': 'flex', 'gap':'20px'})
+    )
+])
+
+@app.callback(
+    [Output('driver1-dropdown', 'options'),
+     Output('driver2-dropdown', 'options'),
+     Output('driver1-dropdown', 'value'),
+     Output('driver2-dropdown', 'value')],
+    [Input('year-dropdown', 'value'),
+     Input('gp-dropdown', 'value'),
+     Input('session-dropdown', 'value')]
+)
+
+def update_driver_options(year, gp, session_type):
+    if not all([year, gp, session_type]):
+        raise PreventUpdate
+    session = load_session(year, gp, session_type)
+    drivers = session.laps['Driver'].unique()
+    return drivers, drivers, None, None
+
+@app.callback(
+    [Output('speed-delta-graph', 'figure'),
+     Output('track-map-delta', 'figure')],
+    [Input('year-dropdown', 'value'),
+     Input('gp-dropdown', 'value'),
+     Input('session-dropdown', 'value'),
+     Input('driver1-dropdown', 'value'),
+     Input('driver2-dropdown', 'value')]
+)
+
+def update_graphs (year, gp, session_type, driver1, driver2) : 
+    if not all([year, gp, session_type, driver1, driver2]):
+        raise PreventUpdate
+    session = load_session(year, gp, session_type)
+    circuit_info = session.get_circuit_info()
+
+    ref_lap, ref_tel = get_fastest_lap_telemetry(session, driver1)
+    comp_lap, comp_tel = get_fastest_lap_telemetry(session, driver2)
+
+    d_ref_norm, d_comp_norm, delta_time = delta_cumulative(ref_tel, comp_tel)
+
+    fig = plot_speed_delta_plotly (
+        d_ref_norm  = d_ref_norm,
+        d_comp_norm = d_comp_norm,
+        ref_speed = ref_tel['Speed'],
+        comp_speed = comp_tel['Speed'],
+        delta_time = delta_time,
+        ref_name = driver1,
+        comp_name = driver2,
+        ref_color = 'red',
+        comp_color = 'goldenrod',
+        circuit_info = circuit_info,
+    )
+
+    fig_map = plot_track_map_plotly(
+        ref_X=ref_tel['X'].values,
+        ref_Y=ref_tel['Y'].values,
+        circuit_info = circuit_info,
+        delta_time=delta_time,
+        ref_name='LEC',
+        comp_name='SAI',
+        ref_color = 'red',
+        comp_color = 'goldenrod',
+        session = session,
+    )
+    return fig, fig_map
+
+if __name__ == '__main__':
+    app.run(debug=True)

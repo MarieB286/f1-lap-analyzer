@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 
 
 def plot_speed_delta (d_ref_norm, d_comp_norm, ref_speed, comp_speed, delta_time, ref_name, comp_name, ref_color, comp_color, circuit_info):
