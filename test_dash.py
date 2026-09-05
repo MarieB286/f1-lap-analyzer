@@ -2,7 +2,7 @@ from dash import Dash, html, dcc, Input, Output
 import plotly.express as px
 import pandas as pd
 import time
-from core.data_loading import load_session, get_fastest_lap_telemetry
+from core.data_loading import load_session, get_fastest_lap_telemetry, get_available_schedule, get_drivers_full_infos
 from visualization.speed_delta_plotly import plot_speed_delta_plotly
 from visualization.track_map_plotly import plot_track_map_plotly
 from core.delta_computer import delta_cumulative
@@ -14,18 +14,14 @@ app.layout = html.Div([
     html.H1("F1 Lap Analyzer"),
     dcc.Dropdown(
         id = 'year-dropdown',
-        options = [2022, 2023, 2024],
-        value = 2024,
+        options = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
     ),
     dcc.Dropdown(
         id = 'gp-dropdown',
-        options = ['Monaco', 'Bahrain', 'Silverstone'],
-        value = 'Monaco',
     ),
     dcc.Dropdown(
         id = 'session-dropdown',
         options = ['Q', 'R'],
-        value = 'Q',
     ),
     dcc.Dropdown(
         id='driver1-dropdown',
@@ -49,6 +45,18 @@ app.layout = html.Div([
 ])
 
 @app.callback(
+        Output('gp-dropdown', 'options'),
+        Input('year-dropdown', 'value')
+)
+
+def update_gp(year): 
+    if not all([year]):
+        raise PreventUpdate
+    events  = get_available_schedule(year)
+    return events
+
+
+@app.callback(
     [Output('driver1-dropdown', 'options'),
      Output('driver2-dropdown', 'options'),
      Output('driver1-dropdown', 'value'),
@@ -61,8 +69,7 @@ app.layout = html.Div([
 def update_driver_options(year, gp, session_type):
     if not all([year, gp, session_type]):
         raise PreventUpdate
-    session = load_session(year, gp, session_type)
-    drivers = session.laps['Driver'].unique()
+    drivers = get_drivers_full_infos(year, gp, session_type)
     return drivers, drivers, None, None
 
 @app.callback(
@@ -104,8 +111,8 @@ def update_graphs (year, gp, session_type, driver1, driver2) :
         ref_Y=ref_tel['Y'].values,
         circuit_info = circuit_info,
         delta_time=delta_time,
-        ref_name='LEC',
-        comp_name='SAI',
+        ref_name=driver1,
+        comp_name=driver2,
         ref_color = 'red',
         comp_color = 'goldenrod',
         session = session,
