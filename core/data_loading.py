@@ -61,3 +61,16 @@ def add_qualifying_phase(laps):
     laps['QualiPhase'] = phases
     return laps
 
+def get_corner_min_speed(telemetry, corner_distance, window_before = 60, window_after =30): 
+    telemetry = telemetry[(telemetry['Distance']> corner_distance - window_before)&(telemetry['Distance']< corner_distance + window_after)]
+    vmin = min(telemetry['Speed'])
+    return vmin
+
+def classify_corners(vmin):
+    if vmin < 120 : 
+        cat = 'slow'
+    elif vmin >= 120 and vmin < 200 : 
+        cat = 'medium'
+    elif vmin >= 200 : 
+        cat = 'fast'
+    return cat
