@@ -24,6 +24,10 @@ app.layout = html.Div([
         options = ['Q', 'R'],
     ),
     dcc.Dropdown(
+        id = 'quali_options',
+        options = ['Q1', 'Q2', 'Q3']
+    ),
+    dcc.Dropdown(
         id='driver1-dropdown',
     ),
     dcc.Dropdown(
@@ -63,13 +67,14 @@ def update_gp(year):
      Output('driver2-dropdown', 'value')],
     [Input('year-dropdown', 'value'),
      Input('gp-dropdown', 'value'),
-     Input('session-dropdown', 'value')]
+     Input('session-dropdown', 'value'),
+     Input('quali_options', 'value')]
 )
 
-def update_driver_options(year, gp, session_type):
-    if not all([year, gp, session_type]):
+def update_driver_options(year, gp, session_type, quali_options):
+    if not all([year, gp, session_type, quali_options]):
         raise PreventUpdate
-    drivers = get_drivers_full_infos(year, gp, session_type)
+    drivers = get_drivers_full_infos(year, gp, session_type, quali_options)
     return drivers, drivers, None, None
 
 @app.callback(
@@ -78,18 +83,19 @@ def update_driver_options(year, gp, session_type):
     [Input('year-dropdown', 'value'),
      Input('gp-dropdown', 'value'),
      Input('session-dropdown', 'value'),
+     Input('quali_options', 'value'),
      Input('driver1-dropdown', 'value'),
      Input('driver2-dropdown', 'value')]
 )
 
-def update_graphs (year, gp, session_type, driver1, driver2) : 
-    if not all([year, gp, session_type, driver1, driver2]):
+def update_graphs (year, gp, session_type, quali_options, driver1, driver2) : 
+    if not all([year, gp, session_type, quali_options, driver1, driver2]):
         raise PreventUpdate
     session = load_session(year, gp, session_type)
     circuit_info = session.get_circuit_info()
 
-    ref_lap, ref_tel = get_fastest_lap_telemetry(session, driver1)
-    comp_lap, comp_tel = get_fastest_lap_telemetry(session, driver2)
+    ref_lap, ref_tel = get_fastest_lap_telemetry(session, driver1, quali_options)
+    comp_lap, comp_tel = get_fastest_lap_telemetry(session, driver2, quali_options)
 
     d_ref_norm, d_comp_norm, delta_time = delta_cumulative(ref_tel, comp_tel)
 
