@@ -7,44 +7,75 @@ from visualization.speed_delta_plotly import plot_speed_delta_plotly
 from visualization.track_map_plotly import plot_track_map_plotly
 from core.delta_computer import delta_cumulative
 from dash.exceptions import PreventUpdate
+from dash import dash_table
 
 app = Dash(__name__)
 
 app.layout = html.Div([
     html.H1("F1 Lap Analyzer"),
-    dcc.Dropdown(
-        id = 'year-dropdown',
-        options = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
-    ),
-    dcc.Dropdown(
-        id = 'gp-dropdown',
-    ),
-    dcc.Dropdown(
-        id = 'session-dropdown',
-        options = ['Q', 'R'],
-    ),
-    dcc.Dropdown(
-        id = 'quali_options',
-        options = ['Q1', 'Q2', 'Q3']
-    ),
-    dcc.Dropdown(
-        id='driver1-dropdown',
-    ),
-    dcc.Dropdown(
-        id='driver2-dropdown',
+    html.Div([
+        html.Div(
+            dcc.Dropdown(id = 'year-dropdown', options = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]),
+            style = {'flex' : '1', 'minWidth':'0'}
+        ),
+        html.Div(
+            dcc.Dropdown(id = 'gp-dropdown'),
+            style = {'flex' : '1', 'minWidth':'0'}
+        ),
+        html.Div(
+            dcc.Dropdown(
+                    id = 'session-dropdown',
+                    options = ['Q', 'R'],
+                ),
+            style = {'flex' : '1', 'minWidth':'0'}
+        ),
+        html.Div(
+            dcc.Dropdown(id = 'quali_options', options = ['Q1', 'Q2', 'Q3']),
+            style = {'flex' : '1', 'minWidth':'0'}
+        ),
+    ], style = {'display': 'flex', 'gap':'20px'}),
+    dcc.Loading(
+        id = 'loading-drivers',
+        children = html.Div([
+            html.Div(
+                dcc.Dropdown(id = 'driver1-dropdown'),
+                style = {'flex' : '1', 'minWidth':'0'}
+            ),
+            html.Div(
+                dcc.Dropdown(id = 'driver2-dropdown'),
+                style = {'flex' : '1', 'minWidth':'0'}
+            ),
+        ], style = {'display': 'flex', 'gap':'20px'})
     ),
     dcc.Loading(
         id = 'loading-graphs',
         children=html.Div([
             html.Div(
                 dcc.Graph(id='speed-delta-graph'),
-                style = {'flex' : '1', 'minWidth':'0'}
+                style = {'flex' : '7', 'minWidth':'0'}
             ), 
-            html.Div( 
+            html.Div(
                 dcc.Graph(id='track-map-delta'),
-                style = {'flex' : '1', 'minWidth':'0'}
+                style = {'flex' : '3', 'minWidth':'0'}
             ),
         ], style = {'display': 'flex', 'gap':'20px'})
+    ),
+    dcc.Loading(
+        id = 'loading_corners_class',
+        children = html.Div([
+            dash_table.DataTable(
+                id = 'corners-table',
+                columns=[
+                    {'name' : 'Corner', 'id' : 'Corner'},
+                    {'name' : 'Type', 'id' : 'Type'},
+                    {'name' : 'Vmin Driver 1', 'id' : 'Vmin ref'},
+                    {'name' : 'Vmin Driver 2', 'id' : 'Vmin comp'},
+                ],
+                data = [],
+                style_cell = {'textAlign': 'center', 'padding': '5px', 'fontSize': '12px'},
+                style_header={'fontWeight': 'bold', 'backgroundColor': '#f0f0f0'},
+            )
+        ])
     )
 ])
 

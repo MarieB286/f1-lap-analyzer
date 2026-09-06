@@ -16,7 +16,7 @@ def plot_speed_delta_plotly (d_ref_norm, d_comp_norm, ref_speed, comp_speed,
 
     delta_neg = np.where(delta_time < 0, delta_time, None)
     delta_pos = np.where(delta_time >= 0, delta_time, None)
-    # Zone rouge (Leclerc gagne, delta < 0)
+
     fig.add_trace(
         go.Scatter(
             x=d_ref_norm,
@@ -31,7 +31,6 @@ def plot_speed_delta_plotly (d_ref_norm, d_comp_norm, ref_speed, comp_speed,
         row=2, col=1,
     )
 
-    # Zone jaune (Sainz gagne, delta >= 0)
     fig.add_trace(
         go.Scatter(
             x=d_ref_norm,
@@ -60,15 +59,12 @@ def plot_speed_delta_plotly (d_ref_norm, d_comp_norm, ref_speed, comp_speed,
                            row = 1, col = 1,)   
     fig.update_layout(
         title=f'{ref_name} vs {comp_name} - Speed and cumulative delta',
-        height=700,
-        hovermode='x unified',  # bonus : tooltip commun pour toutes les traces à un même X
+        height=550,
+        hovermode='x unified', 
         showlegend=True,
     )
-
-    # Subplot du haut (vitesses)
     fig.update_yaxes(title_text='Speed (km/h)', range=[0, 350], row=1, col=1)
 
-    # Subplot du bas (delta)
     fig.update_xaxes(title_text='Distance (m)', row=2, col=1)
     fig.update_yaxes(title_text=f'Delta (s)\n←{ref_name}  {comp_name}→', row=2, col=1)
 

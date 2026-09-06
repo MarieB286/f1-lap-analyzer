@@ -39,14 +39,15 @@ def plot_track_map_plotly (ref_X, ref_Y, circuit_info, delta_time, ref_name, com
     ))
 
     fig.update_layout(
-        title=f'{circuit_info.corners.iloc[0].name}',
+        title=f'{ref_name} vs {comp_name} - Where each of them gains time',
         showlegend = False,
-        width = 1100, 
+        height = 450, 
+        plot_bgcolor = 'white',
         margin=dict(l=20, r=100, t=60, b=20),
     )
 
-    fig.update_xaxes(showticklabels= False, showgrid = False, zeroline = False)
-    fig.update_yaxes(showticklabels= False, showgrid = False, zeroline = False, scaleanchor = 'x')
+    fig.update_xaxes(showticklabels= False, showgrid = False, zeroline = False, visible = False)
+    fig.update_yaxes(showticklabels= False, showgrid = False, zeroline = False,  visible = False, scaleanchor = 'x')
 
     vmax = np.percentile(np.abs(delta_diff), 70)
     fig.add_trace(go.Scatter(
@@ -62,12 +63,15 @@ def plot_track_map_plotly (ref_X, ref_Y, circuit_info, delta_time, ref_name, com
             symbol = 'square',
             showscale = True, 
             colorbar = dict(
-                title = dict(text = f'← {ref_name} gains    |    {comp_name} gains →', side = 'right', font = dict(size=11)),
-                thickness = 12,
-                len = 0.5,
+                title = dict(text = f'← {ref_name} gains    |    {comp_name} gains →', side = 'bottom', font = dict(size=11)),
+                orientation = 'h',
+                thickness = 10,
+                len = 0.4,
                 nticks= 11,
-                x = 1.02,
-                y = 0.5, 
+                x = 0.5,
+                xanchor = 'center', 
+                y = -0.04, 
+                yanchor = 'top',
                 tickformat= '.3f',
             ),
         ),
@@ -105,15 +109,4 @@ def plot_track_map_plotly (ref_X, ref_Y, circuit_info, delta_time, ref_name, com
             showlegend=False,
             hoverinfo='skip',
         ))
-
-    fig.update_layout(
-        title=f'{ref_name} vs {comp_name} - Where each of them gains time',
-        showlegend=False,
-        width=900,
-        plot_bgcolor='white',
-        margin=dict(l=20, r=20, t=60, b=20),
-    )
-    fig.update_xaxes(showticklabels=False, showgrid=False, zeroline=False, visible=False)
-    fig.update_yaxes(showticklabels=False, showgrid=False, zeroline=False,
-                    visible=False, scaleanchor='x')
     return fig
