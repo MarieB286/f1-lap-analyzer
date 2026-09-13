@@ -138,8 +138,8 @@ def update_graphs (year, gp, session_type, quali_options, driver1, driver2) :
         delta_time = delta_time,
         ref_name = driver1,
         comp_name = driver2,
-        ref_color = 'red',
-        comp_color = 'goldenrod',
+        ref_color = '#27F4D2',
+        comp_color = '#DC0000',
         circuit_info = circuit_info,
     )
 
@@ -150,8 +150,8 @@ def update_graphs (year, gp, session_type, quali_options, driver1, driver2) :
         delta_time=delta_time,
         ref_name=driver1,
         comp_name=driver2,
-        ref_color = 'red',
-        comp_color = 'goldenrod',
+        ref_color = '#27F4D2',
+        comp_color = '#DC0000',
         session = session,
     )
     return fig, fig_map
