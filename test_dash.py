@@ -2,7 +2,8 @@ from dash import Dash, html, dcc, Input, Output
 import plotly.express as px
 import pandas as pd
 import time
-from core.data_loading import load_session, get_fastest_lap_telemetry, get_available_schedule, get_drivers_full_infos
+from core.data_loading import load_session, get_fastest_lap_telemetry, get_available_schedule, get_drivers_full_infos 
+from core.corner_classifier import get_corner_min_speed, classify_corners, build_corners_table
 from visualization.speed_delta_plotly import plot_speed_delta_plotly
 from visualization.track_map_plotly import plot_track_map_plotly
 from core.delta_computer import delta_cumulative
@@ -155,6 +156,39 @@ def update_graphs (year, gp, session_type, quali_options, driver1, driver2) :
         session = session,
     )
     return fig, fig_map
+
+@app.callback(
+    Output('corners-table', 'data'),
+    Output('corners-table', 'columns'),
+    [Input('year-dropdown', 'value'),
+     Input('gp-dropdown', 'value'),
+     Input('session-dropdown', 'value'),
+     Input('quali_options', 'value'),
+     Input('driver1-dropdown', 'value'),
+     Input('driver2-dropdown', 'value')]
+)
+
+def get_corners_comparison(year, gp, session_type, quali_options, driver1, driver2) : 
+    if not all([year, gp, session_type, quali_options, driver1, driver2]):
+        raise PreventUpdate
+    session = load_session(year, gp, session_type)
+    circuit_info = session.get_circuit_info()
+    ref_lap, ref_tel = get_fastest_lap_telemetry(session, driver1, quali_options)
+    comp_lap, comp_tel = get_fastest_lap_telemetry(session, driver2, quali_options)
+
+    data =  build_corners_table(ref_tel, comp_tel, circuit_info)
+
+    ref_name = session.get_driver(driver1)['FullName']
+    comp_name = session.get_driver(driver2)['FullName']
+
+    columns = [
+        {'name': 'Corner', 'id': 'Corner'},
+        {'name': 'Type', 'id': 'Type'},
+        {'name': f'Vmin {ref_name}', 'id': 'Vmin ref'},
+        {'name': f'Vmin {comp_name}', 'id': 'Vmin comp'},
+    ]
+
+    return data, columns
 
 if __name__ == '__main__':
     app.run(debug=True)
