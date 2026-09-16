@@ -1,0 +1,6 @@
+fastf1
+dash
+plotly
+pandas
+numpy
+scipy
