@@ -71,6 +71,7 @@ app.layout = html.Div([
                     {'name' : 'Type', 'id' : 'Type'},
                     {'name' : 'Vmin Driver 1', 'id' : 'Vmin ref'},
                     {'name' : 'Vmin Driver 2', 'id' : 'Vmin comp'},
+                    {'name' : 'Delta (s)', 'id' : 'Delta_Corner'},
                 ],
                 data = [],
                 style_cell = {'textAlign': 'center', 'padding': '5px', 'fontSize': '12px'},
@@ -186,9 +187,11 @@ def get_corners_comparison(year, gp, session_type, quali_options, driver1, drive
         {'name': 'Type', 'id': 'Type'},
         {'name': f'Vmin {ref_name}', 'id': 'Vmin ref'},
         {'name': f'Vmin {comp_name}', 'id': 'Vmin comp'},
+        {'name' : 'Delta (s)', 'id': 'Delta_Corner'},
     ]
 
     return data, columns
 
 if __name__ == '__main__':
     app.run(debug=True)
+
